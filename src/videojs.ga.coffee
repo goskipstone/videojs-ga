@@ -19,7 +19,7 @@ videojs.plugin 'ga', (options = {}) ->
     'volumeChange', 'error', 'fullscreen'
   ]
   eventsToTrack = options.eventsToTrack || dataSetupOptions.eventsToTrack || defaultsEventsToTrack
-  percentsPlayedInterval = options.percentsPlayedInterval || dataSetupOptions.percentsPlayedInterval || 10
+  percentsPlayedInterval = options.percentsPlayedInterval || dataSetupOptions.percentsPlayedInterval || 25
 
   eventCategory = options.eventCategory || dataSetupOptions.eventCategory || 'Video'
   # if you didn't specify a name, it will be 'guessed' from the video src after metadatas are loaded
@@ -27,6 +27,8 @@ videojs.plugin 'ga', (options = {}) ->
 
   # if debug isn't specified
   options.debug = options.debug || false
+  # post function exec
+  options.postFunction = options.postFunction || -> return
 
   # init a few variables
   percentsAlreadyTracked = []
@@ -53,7 +55,7 @@ videojs.plugin 'ga', (options = {}) ->
         if "start" in eventsToTrack && percent == 0 && percentPlayed > 0
           sendbeacon( 'start', true )
         else if "percentsPlayed" in eventsToTrack && percentPlayed != 0
-          sendbeacon( 'percent played', true, percent )
+          sendbeacon( 'percent played'+(percent-percentsPlayedInterval)+"-"+percent, true, 1)
 
         if percentPlayed > 0
           percentsAlreadyTracked.push(percent)
@@ -66,11 +68,13 @@ videojs.plugin 'ga', (options = {}) ->
         seeking = true
         sendbeacon( 'seek start', false, seekStart )
         sendbeacon( 'seek end', false, seekEnd )
+        percentsAlreadyTracked = [];
 
     return
 
   end = ->
     sendbeacon( 'end', true )
+    percentsAlreadyTracked = [];
     return
 
   play = ->
@@ -112,6 +116,7 @@ videojs.plugin 'ga', (options = {}) ->
 
   sendbeacon = ( action, nonInteraction, value ) ->
     # console.log action, " ", nonInteraction, " ", value
+    options.postFunction(eventCategory, action, eventLabel, value, nonInteraction)
     if window.ga
       ga 'send', 'event',
         'eventCategory' 	: eventCategory

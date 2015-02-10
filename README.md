@@ -25,7 +25,12 @@ You can provide options to the plugin either by passing them in the javascript o
 
 ```javascript
 player.ga({
-  'eventsToTrack': ['fullscreen', 'resize'],
+  'eventsToTrack': ['loaded', 'percentsPlayed', 'start', 'end', 'seek', 'play', 'pause', 'resize', 'volumeChange', 'error', 'fullscreen'],
+  'postFunction': function (eventCategory, action, eventLabel, value, nonInteraction){
+  	// Send Ga user tracking
+  	// use third party tracking
+  	// ga('set', 'dimension1', 'user_id');
+  },
   'debug': true
 });
 ```
@@ -63,7 +68,7 @@ Most of the events are selft explanatory, here's the ones that may need more det
 ####percentsPlayedInterval
 
 This options goes with the ```percentsPlayed``` event. Every ```percentsPlayedInterval``` percents an event will be sent to GA.
-**default:** 10
+**default:** 25
 
 ####debug
 

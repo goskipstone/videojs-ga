@@ -1,5 +1,5 @@
 /*
-* videojs-ga - v0.4.2 - 2015-02-06
+* videojs-ga - v0.4.2 - 2015-02-10
 * Copyright (c) 2015 Michael Bensoussan
 * Licensed MIT
 */
@@ -20,10 +20,11 @@
     }
     defaultsEventsToTrack = ['loaded', 'percentsPlayed', 'start', 'end', 'seek', 'play', 'pause', 'resize', 'volumeChange', 'error', 'fullscreen'];
     eventsToTrack = options.eventsToTrack || dataSetupOptions.eventsToTrack || defaultsEventsToTrack;
-    percentsPlayedInterval = options.percentsPlayedInterval || dataSetupOptions.percentsPlayedInterval || 10;
+    percentsPlayedInterval = options.percentsPlayedInterval || dataSetupOptions.percentsPlayedInterval || 25;
     eventCategory = options.eventCategory || dataSetupOptions.eventCategory || 'Video';
     eventLabel = options.eventLabel || dataSetupOptions.eventLabel;
     options.debug = options.debug || false;
+    options.postFunction = options.postFunction || function() {};
     percentsAlreadyTracked = [];
     seekStart = seekEnd = 0;
     seeking = false;
@@ -45,7 +46,7 @@
           if (__indexOf.call(eventsToTrack, "start") >= 0 && percent === 0 && percentPlayed > 0) {
             sendbeacon('start', true);
           } else if (__indexOf.call(eventsToTrack, "percentsPlayed") >= 0 && percentPlayed !== 0) {
-            sendbeacon('percent played', true, percent);
+            sendbeacon('percent played' + (percent - percentsPlayedInterval) + "-" + percent, true, 1);
           }
           if (percentPlayed > 0) {
             percentsAlreadyTracked.push(percent);
@@ -59,6 +60,7 @@
           seeking = true;
           sendbeacon('seek start', false, seekStart);
           sendbeacon('seek end', false, seekEnd);
+          percentsAlreadyTracked = [];
         }
       }
     };
@@ -102,6 +104,7 @@
       }
     };
     sendbeacon = function(action, nonInteraction, value) {
+      options.postFunction(eventCategory, action, eventLabel, value, nonInteraction);
       if (window.ga) {
         ga('send', 'event', {
           'eventCategory': eventCategory,
