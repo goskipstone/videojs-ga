@@ -105,7 +105,7 @@
           'eventAction': action,
           'eventLabel': eventLabel,
           'eventValue': value,
-          'nonInteraction': nonInteraction
+          'nonInteraction': false
         };
         if (window.dataLayer) {
           dataLayer.push(eventData);
