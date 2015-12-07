@@ -20,7 +20,7 @@ videojs.plugin 'ga', (options = {}) ->
   ]
   eventsToTrack = options.eventsToTrack || dataSetupOptions.eventsToTrack || defaultsEventsToTrack
   percentsPlayedInterval = options.percentsPlayedInterval || dataSetupOptions.percentsPlayedInterval || 10
-
+  eventName = options.eventName || dataSetupOptions.eventName || 'Video'
   eventCategory = options.eventCategory || dataSetupOptions.eventCategory || 'Video'
   # if you didn't specify a name, it will be 'guessed' from the video src after metadatas are loaded
   eventLabel = options.eventLabel || dataSetupOptions.eventLabel
@@ -114,6 +114,7 @@ videojs.plugin 'ga', (options = {}) ->
     # console.log action, " ", nonInteraction, " ", value
     if window.ga
       eventData = 
+        'event'           : eventName
         'eventCategory'   : eventCategory
         'eventAction'     : action
         'eventLabel'      : eventLabel
