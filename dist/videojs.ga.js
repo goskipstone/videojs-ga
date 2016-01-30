@@ -16,11 +16,12 @@
     }
     defaultsEventsToTrack = ['loaded', 'percentsPlayed', 'start', 'end', 'seek', 'play', 'pause', 'resize', 'volumeChange', 'error', 'fullscreen'];
     eventsToTrack = options.eventsToTrack || dataSetupOptions.eventsToTrack || defaultsEventsToTrack;
-    percentsPlayedInterval = options.percentsPlayedInterval || dataSetupOptions.percentsPlayedInterval || 10;
+    percentsPlayedInterval = options.percentsPlayedInterval || dataSetupOptions.percentsPlayedInterval || 25;
     eventName = options.eventName || dataSetupOptions.eventName || 'Video';
     eventCategory = options.eventCategory || dataSetupOptions.eventCategory || 'Video';
     eventLabel = options.eventLabel || dataSetupOptions.eventLabel;
     options.debug = options.debug || false;
+    options.postFunction = options.postFunction || function() {};
     percentsAlreadyTracked = [];
     seekStart = seekEnd = 0;
     seeking = false;
@@ -42,7 +43,7 @@
           if (indexOf.call(eventsToTrack, "start") >= 0 && percent === 0 && percentPlayed > 0) {
             sendbeacon('start', true);
           } else if (indexOf.call(eventsToTrack, "percentsPlayed") >= 0 && percentPlayed !== 0) {
-            sendbeacon('percent played', true, percent);
+            sendbeacon('percent-played' + (percent - percentsPlayedInterval) + "-" + percent, true, 1);
           }
           if (percentPlayed > 0) {
             percentsAlreadyTracked.push(percent);
@@ -56,11 +57,13 @@
           seeking = true;
           sendbeacon('seek start', false, seekStart);
           sendbeacon('seek end', false, seekEnd);
+          percentsAlreadyTracked = [];
         }
       }
     };
     end = function() {
       sendbeacon('end', true);
+      percentsAlreadyTracked = [];
     };
     play = function() {
       var currentTime;
@@ -100,6 +103,7 @@
     };
     sendbeacon = function(action, nonInteraction, value) {
       var eventData;
+      options.postFunction(eventCategory, action, eventLabel, value, nonInteraction);
       if (window.ga) {
         eventData = {
           'event': eventName,
